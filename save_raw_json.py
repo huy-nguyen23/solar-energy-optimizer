@@ -1,8 +1,10 @@
 import requests
 import json
 import os
+
 # URL API NASA POWER lấy dữ liệu theo tháng tại một điểm
 url = "https://power.larc.nasa.gov/api/temporal/monthly/point"
+
 # Các tham số gửi lên NASA API
 params = {
     "parameters": "ALLSKY_SFC_SW_DWN",  # Dữ liệu bức xạ mặt trời
@@ -13,12 +15,16 @@ params = {
     "end": 2024,                        # Năm kết thúc
     "format": "JSON"                    # Định dạng dữ liệu trả về
 }
+
 # Gọi API NASA
 response = requests.get(url, params=params)
+
 # In status code để biết gọi API thành công hay lỗi
 print("Status code:", response.status_code)
+
 # In URL thật đã gửi lên NASA
 print("URL:", response.url)
+
 # Nếu gọi API thất bại thì dừng chương trình
 if response.status_code != 200:
     print("Gọi NASA API thất bại")
