@@ -1,17 +1,33 @@
-import json # Import thư viện json để đọc file JSON
+import json  
 
-with open("data/raw/nasa_solar_raw.json", "r", encoding="utf-8") as file: # Mở file JSON đã lưu
-    data = json.load(file) # Đọc nội dung file JSON thành dictionary Python
+def load_json_file(path):
+    # Đọc file JSON đã lưu từ bài trước
+    with open(path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data
 
-monthly_data = data["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"] # Lấy phần dữ liệu bức xạ theo tháng
+def get_monthly_solar_data(data):
+    # Lấy dữ liệu bức xạ mặt trời theo tháng
+    monthly_data = data["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
+    return monthly_data
 
-print("===== TÁCH YEAR VÀ MONTH_NUMBER =====") # In tiêu đề chương trình
+def parse_month_key(month_key):
+    year_text = month_key[:4] 
+    month_text = month_key[4:6]  
+    year = int(year_text)  
+    month_number = int(month_text)  
+    return year, month_number
 
-for month_key, value in monthly_data.items(): # Duyệt từng cặp key-value trong monthly_data
-    year_text = month_key[:4] # Lấy 4 ký tự đầu của key, ví dụ "202401" -> "2024"
-    month_text = month_key[4:6] # Lấy 2 ký tự tiếp theo, ví dụ "202401" -> "01"
+def main():
+    json_data = load_json_file("data/raw/nasa_solar_raw.json")
     
-    year = int(year_text) # Chuyển year từ chuỗi sang số nguyên
-    month_number = int(month_text) # Chuyển month từ chuỗi sang số nguyên
-   
-    print(month_key, "-> year =", year, ", month_number =", month_number, ", value =", value) # In kết quả tách được
+    monthly_data = get_monthly_solar_data(json_data)
+    
+    print("===== TÁCH YEAR VÀ MONTH_NUMBER =====")  
+
+    for month_key, value in monthly_data.items(): 
+        year,month_number = parse_month_key(month_key)
+        print(month_key, "-> year =", year, ", month_number =", month_number, ", value =", value)  
+    
+if __name__ == '__main__':
+    main()

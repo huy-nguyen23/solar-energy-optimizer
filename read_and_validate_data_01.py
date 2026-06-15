@@ -1,12 +1,20 @@
 import pandas as pd
 
-df = pd.read_csv("data/processed/solar_monthly.csv")
+def read_file_csv(path):
+    df = pd.read_csv(path)
+    return df
 
-print("===== 5 DÒNG ĐẦU TIÊN =====")
-print(df.head())
+def main():
+    nasa_data = read_file_csv("data/processed/solar_monthly.csv")
+    
+    print("===== 5 DÒNG ĐẦU TIÊN =====")
+    print(nasa_data.head())
 
-print("\n===== SỐ DÒNG DỮ LIỆU =====")
-print(len(df))
+    print("\n===== SỐ DÒNG DỮ LIỆU =====")
+    print(len(nasa_data))
 
-print("\n===== DANH SÁCH CỘT =====")
-print(df.columns)
+    print("\n===== DANH SÁCH CỘT =====")
+    print(nasa_data.columns)
+    
+if __name__ == '__main__':
+    main()
