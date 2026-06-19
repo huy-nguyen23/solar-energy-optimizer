@@ -11,6 +11,6 @@ END_YEAR=2024
 
 RAW_JSON_PATH="data/raw/nasa_solar_raw.json"
 PROCESSED_CSV_PATH="data/processed/solar_monthly.csv"   
-
+VISUALIZATION_HTML_PATH="data/processed/monthly_solar_radiation.html"
 
 

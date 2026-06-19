@@ -1,9 +1,9 @@
 from src.nasa_api import fetch_nasa_solar_data
-from src.config import LATITUDE,LONGITUDE,START_YEAR,END_YEAR,RAW_JSON_PATH,PROCESSED_CSV_PATH
+from src.config import LATITUDE,LONGITUDE,START_YEAR,END_YEAR,RAW_JSON_PATH,PROCESSED_CSV_PATH,VISUALIZATION_HTML_PATH
 from src.data_io import save_json_file,load_json_file,save_csv_file,load_csv_file
 from src.processing import get_monthly_solar_data,convert_monthly_data_to_dataframe
 from src.validation import check_number_of_months,check_missing_solar_radiation,calculate_average_solar_radiation,validate_coordinates
-
+from src.visualization import plot_monthly_solar_radiation
 def main():
     """ 
     Run the full solar energy data processing pipeline. 
@@ -34,6 +34,12 @@ def main():
         print("Missing values found in the solar_radiation column.")
         
     print(f"Average solar radiation: {calculate_average_solar_radiation(loaded_solar_df):.2f}")
+    
+    print("Creating visualizations...")
+    fig_radiation=plot_monthly_solar_radiation(loaded_solar_df)
+    fig_radiation.write_html(VISUALIZATION_HTML_PATH)
+    print(f"Saved monthly solar radiation chart to {VISUALIZATION_HTML_PATH}")
+    fig_radiation.show()
 
 if __name__ == "__main__": 
     main()
