@@ -1,0 +1,75 @@
+{
+    "type": "Feature",
+    "geometry": {
+        "type": "Point",
+        "coordinates": [
+            21.011,
+            52.172,
+            125.44
+        ]
+    },
+    "properties": {
+        "parameter": {
+            "ALLSKY_SFC_SW_DWN": {
+                "202401": 0.6607,
+                "202402": 1.2002,
+                "202403": 2.4653,
+                "202404": 3.6766,
+                "202405": 6.2573,
+                "202406": 5.7343,
+                "202407": 5.5654,
+                "202408": 4.68,
+                "202409": 3.6509,
+                "202410": 1.8125,
+                "202411": 0.7548,
+                "202412": 0.5201,
+                "202413": 3.0876
+            },
+            "T2M": {
+                "202401": -1.61,
+                "202402": 4.82,
+                "202403": 5.75,
+                "202404": 10.62,
+                "202405": 16.58,
+                "202406": 19.46,
+                "202407": 22.2,
+                "202408": 21.64,
+                "202409": 18.65,
+                "202410": 9.7,
+                "202411": 2.47,
+                "202412": 1.01,
+                "202413": 10.95
+            }
+        }
+    },
+    "header": {
+        "title": "NASA/POWER Source Native Resolution Monthly and Annual",
+        "api": {
+            "version": "v2.9.4",
+            "name": "POWER Monthly and Annual API"
+        },
+        "sources": [
+            "MERRA2",
+            "SYN1DEG"
+        ],
+        "fill_value": -999.0,
+        "time_standard": "LST",
+        "start": "20240101",
+        "end": "20241231"
+    },
+    "messages": [],
+    "parameters": {
+        "ALLSKY_SFC_SW_DWN": {
+            "units": "kW-hr/m^2/day",
+            "longname": "All Sky Surface Shortwave Downward Irradiance"
+        },
+        "T2M": {
+            "units": "C",
+            "longname": "Temperature at 2 Meters"
+        }
+    },
+    "times": {
+        "data": 0.237,
+        "process": 0.01
+    }
+}
