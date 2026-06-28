@@ -1,0 +1,5 @@
+location_name,system_kwp,model_average_kwh_per_month,survey_low_kwh_per_month,survey_high_kwh_per_month,conclusion
+PTNK,3,376.31,350,400,Reasonable
+PTNK,5,627.19,600,650,Reasonable
+PTNK,6,752.63,720,800,Reasonable
+PTNK,10,1254.38,1200,1300,Reasonable
