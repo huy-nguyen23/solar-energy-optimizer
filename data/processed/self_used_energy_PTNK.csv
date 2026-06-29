@@ -1,0 +1,5 @@
+location_name,system_kwp,monthly_consumption_kwh,monthly_avg_generation_kwh,self_consumption_ratio,self_used_kwh
+PTNK,3,624.67,376.31,0.6,225.79
+PTNK,5,624.67,627.19,0.6,376.31
+PTNK,6,624.67,752.63,0.6,451.58
+PTNK,10,624.67,1254.38,0.6,624.67
