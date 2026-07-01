@@ -1,0 +1,5 @@
+location_name,system_kwp,roof_area_required,monthly_bill_vnd,monthly_consumption_kwh,monthly_avg_generation_kwh,self_consumption_ratio,self_used_kwh,average_price_per_kwh,investment_cost,monthly_saving_vnd,annual_saving_vnd,payback_years
+PTNK,3,15-18 meters square,2000000,624.67,376.31,0.6,225.79,3201.7,44000000,722912,8674942,5.07
+PTNK,5,25-30 meters square,2000000,624.67,627.19,0.6,376.31,3201.7,65000000,1204832,14457981,4.5
+PTNK,6,30-36 meters square,2000000,624.67,752.63,0.6,451.58,3201.7,78500000,1445824,17349884,4.52
+PTNK,10,50-60 meters square,2000000,624.67,1254.38,0.6,624.67,3201.7,120000000,2000006,24000071,5.0
