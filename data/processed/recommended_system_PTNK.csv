@@ -1,0 +1,2 @@
+location_name,system_kwp,roof_area_required,monthly_bill_vnd,monthly_consumption_kwh,monthly_avg_generation_kwh,self_consumption_ratio,self_used_kwh,average_price_per_kwh,investment_cost,monthly_saving_vnd,annual_saving_vnd,payback_years,recommendation_reason
+PTNK,5,25-30 meters square,2000000,624.67,627.19,0.6,376.31,3201.7,65000000,1204832,14457981,4.5,This system meets at least 60% of electricity demand and payback is no more than 6 years.
