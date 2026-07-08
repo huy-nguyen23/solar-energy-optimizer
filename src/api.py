@@ -18,7 +18,7 @@ def geocode_address(address,user_agent=GEOCODING_USER_AGENT):
     }
     
     geo_headers = {
-        "User-Agent": "solar-project-student"
+        "User-Agent": user_agent
     }
     
     geo_response = requests.get(
