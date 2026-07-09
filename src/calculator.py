@@ -30,7 +30,7 @@ def calculate_temperature_loss_factor(
 def calculate_generation_kwh(system_kwp,solar_radiation,days_in_month,efficiency_factor):
     return efficiency_factor*system_kwp*days_in_month*solar_radiation
 
-def calculate_all_systems_advanced(monthly_df,system_sizes=SYSTEM_SIZES,performance_ratio=DEFAULT_PR):
+def calculate_all_systems_advanced(monthly_df,system_sizes=SYSTEM_SIZES):
     rows=[]
 
     for i,row in monthly_df.iterrows():

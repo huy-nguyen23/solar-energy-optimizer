@@ -1,15 +1,16 @@
 import pandas as pd
-from src.config import PARAMETER
+import calendar
+from src.config import SOLAR_PARAMETER,TEMPERATURE_PARAMETER
 
-def get_monthly_solar_data(nasa_data):
+def get_monthly_parameter_data(nasa_data,parameter):
     """
-    Extract monthly solar radiation data from a NASA API response. 
-    Args: 
-        nasa_data (dict): The NASA API response as a Python dictionary. 
-    Returns: 
-        dict: Monthly solar radiation data with month keys in YYYYMM format.
+    Extract one monthly parameter dictionary from a NASA API response.
+
+    Example parameters:
+    - ALLSKY_SFC_SW_DWN: solar radiation
+    - T2M: air temperature
     """
-    monthly_data = nasa_data["properties"]["parameter"][PARAMETER]
+    monthly_data = nasa_data["properties"]["parameter"][parameter]
     return monthly_data
 
 
@@ -27,24 +28,46 @@ def parse_month_key(month_key):
     month_number = int(month_text)  
     return year, month_number
 
+def convert_power_data_to_monthly_dataframe(nasa_data, location_name):
+    """
+    Convert NASA solar and temperature data into the monthly model input table.
 
-def convert_monthly_data_to_dataframe(monthly_solar_data):
+    Output columns:
+    - location_name
+    - month
+    - year
+    - month_number
+    - solar_radiation
+    - air_temperature
+    - days_in_month
     """
-    Convert monthly solar radiation data into a pandas DataFrame. 
-    Args: 
-        monthly_solar_data (dict): Monthly solar radiation data from NASA. 
-    Returns: 
-        pandas.DataFrame: A DataFrame with month, year, month_number, and solar_radiation columns.
-    """
-    rows = []
-    for month_key, value in monthly_solar_data.items():
-        year, month_number = parse_month_key(month_key)
-        row = {
-            "month": month_key,
-            "year": year,
-            "month_number": month_number,
-            "solar_radiation": value
+    solar_data=get_monthly_parameter_data(nasa_data,SOLAR_PARAMETER)
+    temperature_data=get_monthly_parameter_data(nasa_data,TEMPERATURE_PARAMETER)
+    rows=[]
+
+    for month_key, solar_radiation in solar_data.items(): 
+        year, month_number=parse_month_key(month_key)
+        
+        if month_number==13:
+            continue
+        
+        month=f"{year}-{month_number:02d}"
+        days_in_month=calendar.monthrange(year,month_number)[1]
+        air_temperature=temperature_data[month_key]
+        
+        row={
+            'location_name':location_name,
+            'month':month,
+            'year':year,
+            'month_number':month_number,
+            'solar_radiation':solar_radiation,
+            'air_temperature':air_temperature,
+            'days_in_month':days_in_month
         }
+        
         rows.append(row)
-    solar_df = pd.DataFrame(rows)
-    return solar_df
+
+    df=pd.DataFrame(rows)
+    return df
+
+
