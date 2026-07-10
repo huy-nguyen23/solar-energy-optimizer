@@ -61,6 +61,47 @@ def calculate_all_systems_advanced(monthly_df,system_sizes=SYSTEM_SIZES):
                 "loss_factor":round(loss_factor,4),
                 "generation_kwh":round(generation_kwh,2)
             })
-            
+
     result_df=pd.DataFrame(rows)
     return result_df
+
+def build_generation_summary(generation_df,location_name):
+    summary_df = generation_df.groupby("system_kwp")["generation_kwh"].mean().reset_index()
+    summary_df["generation_kwh"] = summary_df["generation_kwh"].round(2)
+
+    summary_df=summary_df.rename(columns={"generation_kwh":"monthly_avg_generation_kwh"})
+
+    summary_df["location_name"]=location_name
+    
+    summary_df = summary_df[["location_name","system_kwp","monthly_avg_generation_kwh"]]
+    return summary_df
+    
+def compare_model_with_survey(generation_df,location_name,survey_ranges):
+    rows=[]
+
+    for system_kwp,survey_range in survey_ranges.items():
+        system_df=generation_df[generation_df["system_kwp"]==system_kwp]
+        
+        model_average=system_df["generation_kwh"].mean()
+        
+        survey_low=survey_range[0]
+        survey_high=survey_range[1]
+        
+        if survey_low<=model_average<=survey_high:
+            conclusion="Reasonable" 
+        elif model_average<survey_low:
+            conclusion="Lower Than Survey"
+        else:
+            conclusion="Higher Than Survey"    
+            
+        rows.append({
+            "location_name":location_name,
+            "system_kwp":system_kwp,
+            "model_average_kwh_per_month":round(model_average,2),
+            "survey_low_kwh_per_month":survey_low,
+            "survey_high_kwh_per_month":survey_high,
+            "conclusion":conclusion
+        })
+
+    comparison_df=pd.DataFrame(rows)
+    return comparison_df

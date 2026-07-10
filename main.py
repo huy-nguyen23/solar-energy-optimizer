@@ -1,10 +1,12 @@
 import pandas as pd
 
-from src.calculator import calculate_all_systems_advanced
+from src.calculator import calculate_all_systems_advanced,build_generation_summary,compare_model_with_survey
 
 from src.processing import convert_power_data_to_monthly_dataframe
 
 from src import config
+
+from src.financial import build_financial_input,build_self_used_energy,build_financial_summary
 
 from src.api import(
     geocode_address,
@@ -94,6 +96,62 @@ def main():
     save_csv_file(generation_df,config.GENERATION_ADVANCED_CSV_PATH)
     
     print(generation_df)
+    
+    # ========================================================
+    # 5. Summarize average generation by system size
+    # ========================================================
+    print_section("5. Summarize average generation by system size")
+    
+    summary_df=build_generation_summary(generation_df,location_name)
+    save_csv_file(summary_df,config.GENERATION_SUMMARY_CSV_PATH)
+    
+    print(summary_df)
+    
+    # ========================================================
+    # 6. Compare the model with real-world survey data
+    # ========================================================
+    print_section("6. Compare the model with real-world survey data")
+    
+    comparison_df=compare_model_with_survey(generation_df,location_name,config.SURVEY_RANGES)
+    save_csv_file(comparison_df,config.MODEL_VS_SURVEY_CSV_PATH)
+    
+    print(comparison_df)
+    
+    # ========================================================
+    # 7. Estimate household electricity consumption
+    # ========================================================
+    print_section("7. Estimate household electricity consumption")
+    
+    financial_df=build_financial_input(location_name,config.MONTHLY_BILL_VND,config.VAT_RATE,config.ELECTRICITY_TIERS)
+    save_csv_file(financial_df,config.FINANCIAL_INPUT_CSV_PATH)
+    
+    print(financial_df)
+    
+    # ========================================================
+    # 8. Calculate self-used solar energy
+    # ========================================================
+    print_section("8. Calculate self-used solar energy")
+    
+    self_used_energy_df=build_self_used_energy(summary_df,financial_df,location_name,config.GRID_TIED_SELF_CONSUMPTION_RATIO)
+    save_csv_file(self_used_energy_df,config.SELF_USED_ENERGY_PATH)
+    
+    print(self_used_energy_df)
+    
+    # ========================================================
+    # 9. Calculate savings and payback period
+    # ========================================================
+
+    print_section("9. Calculate savings and payback period")
+    
+    financial_summary_df=build_financial_summary(self_used_energy_df,financial_df,location_name,config.GRID_TIED_COST_RANGES,config.ROOF_AREA_RANGES)
+    save_csv_file(financial_summary_df,config.FINANCIAL_SUMMARY_PATH)
+    
+    print(financial_summary_df)
+    
+    
+    
+    
+    
     
 if __name__=="__main__":
     main()
