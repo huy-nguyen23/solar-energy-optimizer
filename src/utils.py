@@ -1,5 +1,4 @@
 import json
-import os
 import pandas as pd
 from pathlib import Path
 
@@ -11,11 +10,12 @@ def save_json_file(data,file_path):
         data (dict): The data to save. 
         file_path (str): The path of the JSON file. 
     """
-    os.makedirs(os.path.dirname(file_path), exist_ok=True) #os.path.dirname(file_path)=data/raw
-    with open(file_path, "w", encoding="utf-8") as file:
+    path=Path(file_path)
+    path.parent.mkdir(parents=True,exist_ok=True)
+    
+    with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
-    
-    
+        
 def load_json_file(file_path):
     """ 
     Load data from a JSON file. 
@@ -36,7 +36,8 @@ def save_csv_file(df,file_path):
         df (pandas.DataFrame): The DataFrame to save. 
         file_path (str): The path of the CSV file. 
     """
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    path=Path(file_path)
+    path.parent.mkdir(parents=True,exist_ok=True)
     df.to_csv(file_path, index=False, encoding="utf-8")
 
 
