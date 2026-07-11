@@ -1,9 +1,9 @@
 location_name,system_kwp,option_name,option_description,has_battery,monthly_consumption_kwh,monthly_avg_generation_kwh,self_consumption_ratio,self_used_kwh,unused_or_exported_kwh,average_price_per_kwh_after_vat,investment_cost,annual_saving,monthly_saving,payback_years
-home,3,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,376.31,0.6,225.79,150.52,3201.7,44000000,8674788,722899,5.07
-home,3,hybrid_with_battery,Hybrid with battery storage,True,624.67,376.31,0.9,338.68,37.63,3201.7,82500000,13012183,1084349,6.34
-home,5,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,627.19,0.6,376.31,250.88,3201.7,65000000,14458134,1204845,4.5
-home,5,hybrid_with_battery,Hybrid with battery storage,True,624.67,627.19,0.9,564.47,62.72,3201.7,120000000,21687202,1807267,5.53
-home,6,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,752.63,0.6,451.58,301.05,3201.7,78500000,17349807,1445817,4.52
-home,6,hybrid_with_battery,Hybrid with battery storage,True,624.67,752.63,0.9,624.67,127.96,3201.7,140000000,24000071,2000006,5.83
-home,10,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,1254.38,0.6,624.67,629.71,3201.7,120000000,24000071,2000006,5.0
-home,10,hybrid_with_battery,Hybrid with battery storage,True,624.67,1254.38,0.9,624.67,629.71,3201.7,215000000,24000071,2000006,8.96
+home,3,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,338.68,0.6,203.21,135.47,3201.7,44000000,7807333,650611,5.64
+home,3,hybrid_with_battery,Hybrid with battery storage,True,624.67,338.68,0.9,304.81,33.87,3201.7,82500000,11710999,975917,7.04
+home,5,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,564.47,0.6,338.68,225.79,3201.7,65000000,13012298,1084358,5.0
+home,5,hybrid_with_battery,Hybrid with battery storage,True,624.67,564.47,0.9,508.02,56.45,3201.7,120000000,19518447,1626537,6.15
+home,6,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,677.36,0.6,406.42,270.94,3201.7,78500000,15614665,1301222,5.03
+home,6,hybrid_with_battery,Hybrid with battery storage,True,624.67,677.36,0.9,609.62,67.74,3201.7,140000000,23421998,1951833,5.98
+home,10,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,1128.94,0.6,624.67,504.27,3201.7,120000000,24000071,2000006,5.0
+home,10,hybrid_with_battery,Hybrid with battery storage,True,624.67,1128.94,0.9,624.67,504.27,3201.7,215000000,24000071,2000006,8.96
