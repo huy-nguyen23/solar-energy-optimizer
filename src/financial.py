@@ -73,6 +73,10 @@ def build_financial_input(location_name,monthly_bill_vnd,vat_rate,electricity_ti
     df=pd.DataFrame(result)
     return df
 
+def calculate_self_used_kwh(monthly_generation_kwh,self_consumption_ratio,monthly_consumption_kwh):
+    self_used_kwh=min(monthly_generation_kwh*self_consumption_ratio,monthly_consumption_kwh)
+    return  self_used_kwh
+
 def build_self_used_energy(generation_summary_df,financial_df,location_name,self_consumption_ratio):
     monthly_consumption_kwh=financial_df.loc[0,"monthly_consumption_kwh"]
 
@@ -82,10 +86,7 @@ def build_self_used_energy(generation_summary_df,financial_df,location_name,self
         system_kwp=row["system_kwp"]
         monthly_avg_generation_kwh=row["monthly_avg_generation_kwh"]
         
-        self_used_kwh=min(
-            monthly_avg_generation_kwh*self_consumption_ratio,
-            monthly_consumption_kwh
-        )
+        self_used_kwh=calculate_self_used_kwh(monthly_avg_generation_kwh,self_consumption_ratio,monthly_consumption_kwh)
         
         rows.append({
             "location_name":location_name,
@@ -99,6 +100,18 @@ def build_self_used_energy(generation_summary_df,financial_df,location_name,self
     result_df=pd.DataFrame(rows)
     return result_df
 
+def get_investment_cost(cost_ranges,system_kwp):
+    cost_low,cost_high=cost_ranges[system_kwp]
+    investment_cost=(cost_high+cost_low)/2
+    return investment_cost
+
+def calculate_payback_years(annual_saving,investment_cost):
+    if annual_saving>0:
+        payback_years=investment_cost/annual_saving
+    else:
+        payback_years=None
+    return payback_years
+        
 def build_financial_summary(self_used_df,financial_df,location_name,cost_ranges,roof_area_ranges):
     average_price_per_kwh=financial_df.loc[0,"average_price_per_kwh_after_vat"]
     monthly_bill_vnd=financial_df.loc[0,"monthly_bill_vnd"]
@@ -110,13 +123,9 @@ def build_financial_summary(self_used_df,financial_df,location_name,cost_ranges,
         monthly_saving_vnd=average_price_per_kwh*self_used_kwh
         annual_saving=monthly_saving_vnd*12
         
-        cost_low,cost_high=cost_ranges[system_kwp]
-        investment_cost=(cost_high+cost_low)/2
+        investment_cost=get_investment_cost(cost_ranges,system_kwp)
         
-        if annual_saving>0:
-            payback_years=investment_cost/annual_saving
-        else:
-            payback_years=None
+        payback_years=calculate_payback_years(annual_saving,investment_cost)
             
         rows.append({
             "location_name":location_name,
@@ -138,6 +147,9 @@ def build_financial_summary(self_used_df,financial_df,location_name,cost_ranges,
     return result_df
 
 def compare_battery_options(summary_df,financial_df,location_name):
+    monthly_consumption_kwh=financial_df.loc[0,"monthly_consumption_kwh"]
+    average_price_per_kwh_after_vat=financial_df.loc[0,"average_price_per_kwh_after_vat"]
+    
     rows=[]
     for i,row in summary_df.iterrows():
         system_kwp=row["system_kwp"]
@@ -150,17 +162,17 @@ def compare_battery_options(summary_df,financial_df,location_name):
             has_battery=scenario.has_battery
             cost_ranges=scenario.cost_ranges
             
-            self_used_kwh=min(monthly_avg_generation_kwh*self_consumption_ratio,monthly_consumption_kwh)
-            unused_or_exported_kwh=max(0,monthly_avg_generation_kwh-self_used_kwh)
-            monthly_saving=self_used_kwh*average_price_per_kwh_after_vat
-            anual_saving=monthly_saving*12
+            self_used_kwh=calculate_self_used_kwh(monthly_avg_generation_kwh,self_consumption_ratio,monthly_consumption_kwh)
             
-            cost_low,cost_high=cost_ranges[system_kwp]
-            investment_cost=(cost_high+cost_low)/2
-            if anual_saving>0:
-                payback_years=investment_cost/anual_saving
-            else:
-                payback_years=None
+            unused_or_exported_kwh=max(0,monthly_avg_generation_kwh-self_used_kwh)
+            
+            monthly_saving=self_used_kwh*average_price_per_kwh_after_vat
+            annual_saving=monthly_saving*12
+            
+            investment_cost=get_investment_cost(cost_ranges,system_kwp)
+            
+            payback_years=calculate_payback_years(annual_saving,investment_cost)
+            
             rows.append({
                 "location_name":location_name,
                 "system_kwp":system_kwp,
@@ -174,8 +186,28 @@ def compare_battery_options(summary_df,financial_df,location_name):
                 "unused_or_exported_kwh":round(unused_or_exported_kwh,2),
                 "average_price_per_kwh_after_vat":round(average_price_per_kwh_after_vat,2),
                 "investment_cost":round(investment_cost),
-                "anual_saving":round(anual_saving),
+                "annual_saving":round(annual_saving),
                 "monthly_saving":round(monthly_saving),
                 "payback_years":round(payback_years,2)
             })
+            
     result_df=pd.DataFrame(rows)
+    
+    return result_df
+
+def recommend_test_option(option_df,min_generation_ratio,max_payback_years):
+    suitable_df=option_df[
+        (option_df["monthly_avg_generation_kwh"]>=option_df["monthly_consumption_kwh"]*min_generation_ratio) &
+        (option_df["payback_years"]<=max_payback_years)  
+    ]
+    
+    if len(suitable_df)>0:
+        recommended=suitable_df.sort_values("payback_years").iloc[0]
+        reason="This system meets at least 60% of electricity demand and payback is no more than 6 years."
+    else:
+        recommended=option_df.sort_values("payback_years").iloc[0]
+        reason="No system meets all conditions, so choosing the one with the lowest payback period."
+        
+    recommended_df=pd.DataFrame([recommended.to_dict()])
+    recommended_df["recommendation_reason"]=reason
+    return recommended_df

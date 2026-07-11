@@ -6,7 +6,7 @@ from src.processing import convert_power_data_to_monthly_dataframe
 
 from src import config
 
-from src.financial import build_financial_input,build_self_used_energy,build_financial_summary
+from src.financial import build_financial_input,build_self_used_energy,build_financial_summary,compare_battery_options,recommend_test_option
 
 from src.api import(
     geocode_address,
@@ -140,7 +140,6 @@ def main():
     # ========================================================
     # 9. Calculate savings and payback period
     # ========================================================
-
     print_section("9. Calculate savings and payback period")
     
     financial_summary_df=build_financial_summary(self_used_energy_df,financial_df,location_name,config.GRID_TIED_COST_RANGES,config.ROOF_AREA_RANGES)
@@ -148,10 +147,43 @@ def main():
     
     print(financial_summary_df)
     
+    # ========================================================
+    # 10. Compare battery and no-battery options
+    # ========================================================
+    print_section("10. Compare battery and no-battery options")
     
+    battery_option_df=compare_battery_options(summary_df,financial_df,location_name)
+    save_csv_file(battery_option_df,config.BATTERY_OPTION_CSV_PATH)
     
+    print(battery_option_df)
     
+    # ========================================================
+    # 11. Recommend the best solar option
+    # ========================================================
+    print_section("11. Recommend the best solar option")
     
+    recommended_df=recommend_test_option(battery_option_df,config.MIN_GENERATION_RATIO,config.MAX_PAYBACK_YEARS)
+    save_csv_file(recommended_df,config.RECOMMENDED_SYSTEM_CSV_PATH)
+    
+    print(recommended_df)
+    
+    # ========================================================
+    # 12. Print final conclusion
+    # ========================================================
+    print_section("12. Final conclusion")
+    
+    recommended = recommended_df.iloc[0]
+    
+    print("Location:", recommended["location_name"])
+    print("Recommended system:", recommended["system_kwp"], "kWp")
+    print("Recommended option:", recommended["option_description"])
+    print("Investment cost:", f"{recommended['investment_cost']:,.0f}", "VNĐ")
+    print("Average generation/month:", recommended["monthly_avg_generation_kwh"], "kWh")
+    print("Self-used electricity/month:", recommended["self_used_kwh"], "kWh")
+    print("Savings/month:", f"{recommended['monthly_saving']:,.0f}", "VNĐ")
+    print("Savings/year:", f"{recommended['annual_saving']:,.0f}", "VNĐ")
+    print("Payback:", recommended["payback_years"], "years")
+    print("Reason:",  recommended["recommendation_reason"])
     
 if __name__=="__main__":
     main()
