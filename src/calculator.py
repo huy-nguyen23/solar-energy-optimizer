@@ -19,6 +19,20 @@ def calculate_temperature_loss_factor(
     shading_factor=SHADING_FACTOR,
     availability_factor=AVAILABILITY_FACTOR
 ):
+    """
+    Estimate total loss factor using temperature and fixed system losses.
+
+    cell_temperature = air_temperature + 25
+    temperature_factor = 1 + temperature_coefficient * (cell_temperature - 25)
+
+    The final loss_factor combines:
+    - temperature loss
+    - inverter loss
+    - soiling loss
+    - wiring loss
+    - shading loss
+    - availability loss
+    """
     cell_temperature=air_temperature+25
         
     temperature_factor=1+temperature_coefficient*(cell_temperature-25)
@@ -28,9 +42,38 @@ def calculate_temperature_loss_factor(
     return cell_temperature,temperature_factor,loss_factor
 
 def calculate_generation_kwh(system_kwp,solar_radiation,days_in_month,efficiency_factor):
+    """
+    Calculate monthly solar generation in kWh.
+
+    Formula:
+    generation_kwh = system_kwp * solar_radiation * days_in_month * efficiency_factor
+    
+    Args:
+        system_kwp (float): The capacity of the solar system in kWp.
+        solar_radiation (float): Daily solar radiation (kWh/m²/day).
+        days_in_month (int): Number of days in the month.
+        efficiency_factor (float): The total loss factor or performance ratio.
+        
+    Returns:
+        float: Total generation in kWh for the month.
+    """
     return efficiency_factor*system_kwp*days_in_month*solar_radiation
 
 def calculate_all_systems_advanced(monthly_df,system_sizes=SYSTEM_SIZES):
+    """
+    Calculate solar generation with temperature and equipment loss factors.
+    
+    Args:
+        monthly_df (pd.DataFrame): A DataFrame containing monthly climatic input data 
+            (must include 'air_temperature', 'solar_radiation', and 'days_in_month' columns).
+        system_sizes (list, optional): A list of solar system capacities (in kWp) to simulate. 
+            Defaults to the sizes defined in config.SYSTEM_SIZES.
+            
+    Returns:
+        pd.DataFrame: A comprehensive DataFrame containing the simulated results for all 
+            system sizes, including intermediate calculation values such as 'cell_temperature', 
+            'temperature_factor', 'loss_factor', and the final 'generation_kwh'.
+    """
     rows=[]
 
     for i,row in monthly_df.iterrows():
@@ -66,6 +109,9 @@ def calculate_all_systems_advanced(monthly_df,system_sizes=SYSTEM_SIZES):
     return result_df
 
 def build_generation_summary(generation_df,location_name):
+    """
+    Calculate average monthly generation by solar system size.
+    """
     summary_df = generation_df.groupby("system_kwp")["generation_kwh"].mean().reset_index()
     summary_df["generation_kwh"] = summary_df["generation_kwh"].round(2)
 
@@ -77,6 +123,9 @@ def build_generation_summary(generation_df,location_name):
     return summary_df
     
 def compare_model_with_survey(generation_df,location_name,survey_ranges):
+    """
+    Compare model average generation with real-world survey ranges.
+    """
     rows=[]
 
     for system_kwp,survey_range in survey_ranges.items():

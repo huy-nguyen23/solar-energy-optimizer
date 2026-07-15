@@ -30,16 +30,14 @@ def parse_month_key(month_key):
 
 def convert_power_data_to_monthly_dataframe(nasa_data, location_name):
     """
-    Convert NASA solar and temperature data into the monthly model input table.
+    Convert NASA solar and temperature data into the monthly model input DataFrame.
 
-    Output columns:
-    - location_name
-    - month
-    - year
-    - month_number
-    - solar_radiation
-    - air_temperature
-    - days_in_month
+    Args:
+        nasa_data (dict): The full JSON response from the NASA API.
+        location_name (str): The name of the location being analyzed.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing monthly solar radiation, temperature, and days in month.
     """
     solar_data=get_monthly_parameter_data(nasa_data,SOLAR_PARAMETER)
     temperature_data=get_monthly_parameter_data(nasa_data,TEMPERATURE_PARAMETER)

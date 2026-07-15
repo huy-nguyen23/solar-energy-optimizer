@@ -29,6 +29,9 @@ BATTERY_SCENARIOS=(
 )
 
 def estimate_kwh_from_tiered_bill(total_bill_vnd,tiers,vat_rate):
+    """
+    Estimate monthly electricity consumption in kWh from a tiered electricity bill.
+    """
     money_before_vat=total_bill_vnd/(1+vat_rate)
     
     total_kwh=0
@@ -53,6 +56,14 @@ def estimate_kwh_from_tiered_bill(total_bill_vnd,tiers,vat_rate):
     return total_kwh,money_before_vat
 
 def build_financial_input(location_name,monthly_bill_vnd,vat_rate,electricity_tiers):
+    """
+    Build the financial input table.
+
+    Output:
+    - monthly bill
+    - estimated monthly kWh consumption
+    - average electricity price after VAT
+    """    
     monthly_consumption_kwh,money_before_vat=estimate_kwh_from_tiered_bill(
         monthly_bill_vnd,
         electricity_tiers,
@@ -74,10 +85,24 @@ def build_financial_input(location_name,monthly_bill_vnd,vat_rate,electricity_ti
     return df
 
 def calculate_self_used_kwh(monthly_generation_kwh,self_consumption_ratio,monthly_consumption_kwh):
+    """
+    Calculate how much solar energy can be used by the household.
+
+    Formula:
+    self_used_kwh = min(
+        monthly_generation_kwh * self_consumption_ratio,
+        monthly_consumption_kwh
+    )
+    """
     self_used_kwh=min(monthly_generation_kwh*self_consumption_ratio,monthly_consumption_kwh)
     return  self_used_kwh
 
 def build_self_used_energy(generation_summary_df,financial_df,location_name,self_consumption_ratio):
+    """
+    Build the self-used solar energy table for grid-tied systems.
+
+    This is mainly used for the no-battery financial summary.
+    """
     monthly_consumption_kwh=financial_df.loc[0,"monthly_consumption_kwh"]
 
     rows=[]
@@ -101,11 +126,19 @@ def build_self_used_energy(generation_summary_df,financial_df,location_name,self
     return result_df
 
 def get_investment_cost(cost_ranges,system_kwp):
+    """
+    Get the average investment cost for a solar system size.
+    """
     cost_low,cost_high=cost_ranges[system_kwp]
     investment_cost=(cost_high+cost_low)/2
     return investment_cost
 
 def calculate_payback_years(annual_saving,investment_cost):
+    """
+    Calculate payback years.
+
+    If annual saving is 0 or negative, return None.
+    """
     if annual_saving>0:
         payback_years=investment_cost/annual_saving
     else:
@@ -113,6 +146,9 @@ def calculate_payback_years(annual_saving,investment_cost):
     return payback_years
         
 def build_financial_summary(self_used_df,financial_df,location_name,cost_ranges,roof_area_ranges):
+    """
+    Build financial summary for grid-tied systems without battery storage.
+    """
     average_price_per_kwh=financial_df.loc[0,"average_price_per_kwh_after_vat"]
     monthly_bill_vnd=financial_df.loc[0,"monthly_bill_vnd"]
     rows=[]
@@ -147,6 +183,9 @@ def build_financial_summary(self_used_df,financial_df,location_name,cost_ranges,
     return result_df
 
 def compare_battery_options(summary_df,financial_df,location_name):
+    """
+    Compare grid-tied systems and hybrid systems with battery storage.
+    """   
     monthly_consumption_kwh=financial_df.loc[0,"monthly_consumption_kwh"]
     average_price_per_kwh_after_vat=financial_df.loc[0,"average_price_per_kwh_after_vat"]
     
@@ -195,7 +234,18 @@ def compare_battery_options(summary_df,financial_df,location_name):
     
     return result_df
 
-def recommend_test_option(option_df,min_generation_ratio,max_payback_years):
+def recommend_best_option(option_df,min_generation_ratio,max_payback_years):
+    """
+    Recommend the best option from both:
+    - grid-tied without battery
+    - hybrid with battery storage
+
+    Rule:
+    - monthly generation >= 60% of monthly consumption
+    - payback years <= 6
+
+    If no option satisfies the rule, choose the option with the lowest payback.
+    """
     suitable_df=option_df[
         (option_df["monthly_avg_generation_kwh"]>=option_df["monthly_consumption_kwh"]*min_generation_ratio) &
         (option_df["payback_years"]<=max_payback_years)  

@@ -9,7 +9,18 @@ from src.config import (
 
 def geocode_address(address,user_agent=GEOCODING_USER_AGENT):
     """
-    Convert an address into latitude and longitude using Nominatim.
+    Convert an address into latitude and longitude using Nominatim OpenStreetMap API.
+    
+    Args:
+        address (str): The physical address to geocode.
+        user_agent (str): The user agent string for the API request.
+
+    Returns:
+        tuple: (latitude, longitude) as floats.
+        
+    Raises:
+        RuntimeError: If the API request fails.
+        ValueError: If no coordinates are found for the address.
     """
     geo_params = {
         "q": address,
@@ -42,6 +53,19 @@ def geocode_address(address,user_agent=GEOCODING_USER_AGENT):
 def fetch_nasa_solar_data(latitude,longitude,start_year,end_year,parameters):
     """
     Fetch monthly NASA POWER data for one or more parameters.
+    
+    Args:
+        latitude (float): The latitude of the location.
+        longitude (float): The longitude of the location.
+        start_year (int): The starting year for historical data.
+        end_year (int): The ending year for historical data.
+        parameters (str): Comma-separated list of NASA parameters to fetch.
+
+    Returns:
+        dict: The raw JSON data returned from the NASA POWER API.
+        
+    Raises:
+        RuntimeError: If the API request fails.
     """
     nasa_params = {
         "parameters": parameters,  
