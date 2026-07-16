@@ -32,6 +32,9 @@ def estimate_kwh_from_tiered_bill(total_bill_vnd,tiers,vat_rate):
     """
     Estimate monthly electricity consumption in kWh from a tiered electricity bill.
     """
+    if total_bill_vnd<0:
+        raise ValueError("Electricity bill must be non-negative.")
+    
     money_before_vat=total_bill_vnd/(1+vat_rate)
     
     total_kwh=0
