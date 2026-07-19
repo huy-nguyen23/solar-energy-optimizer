@@ -142,6 +142,9 @@ def calculate_payback_years(annual_saving,investment_cost):
 
     If annual saving is 0 or negative, return None.
     """
+    if investment_cost<=0:
+        raise ValueError("Investment cost must be greater than 0")
+    
     if annual_saving>0:
         payback_years=investment_cost/annual_saving
     else:

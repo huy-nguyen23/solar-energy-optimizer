@@ -65,7 +65,7 @@ def main():
             roof_area = st.number_input("Roof Area (m²)", value=60.0, step=5.0,
                                         help="Estimated available roof space. A minimum of 15m² is required for a basic 3 kWp system.")
         with col2:
-            monthly_bill = st.number_input("Monthly Electricity Bill (VND)", min_value=100_000, max_value=50_000_000, value=2_400_000, step=100_000,
+            monthly_bill = st.number_input("Monthly Electricity Bill (VND)", value=2_400_000, step=100_000,
                                            help="Your average monthly electricity bill. We will estimate your consumption using the tiered pricing model.")
             
         with st.expander("🛠️ Advanced Settings (NASA API & Optimization Rules)"):
@@ -94,95 +94,116 @@ def main():
         if roof_area < 15.0:
             st.error("❌ Roof area is too small! You need at least 15 m² to install the smallest system (3 kWp).")
             return
-            
+         
         if roof_area > 60.0:
             st.error("❌ Roof area exceeds the maximum supported size (60 m²) for our largest 10 kWp system package.")
             return
             
+        if monthly_bill<=0:
+            st.error("❌ Monthly electricity bill must be greater than 0.")
+            return
+        
         # Create placeholders for dynamic status updates
         status_text = st.empty()
         progress_bar = st.progress(0)
         
-
-        status_text.info("🔍 Geocoding address into coordinates...")
-        latitude, longitude = geocode_address(address)
-        progress_bar.progress(20)
+        try:
+            status_text.info("🔍 Geocoding address into coordinates...")
+            latitude, longitude = geocode_address(address)
+            progress_bar.progress(20)
+            
+            status_text.info(f"🛰️ Fetching solar radiation data from NASA API for Lat: {latitude:.4f}, Lon: {longitude:.4f}...")
+            
+            # Filter system sizes based on roof area
+            max_kwp = roof_area / 5
+            valid_system_sizes = [s for s in config.SYSTEM_SIZES if s <= max_kwp]
+            
+            if not valid_system_sizes:
+                st.toast("Roof area is small. Defaulting to 3kWp system.", icon="⚠️")
+                valid_system_sizes = [3]
+            # Step 1: Call NASA API
+            nasa_data = fetch_nasa_solar_data(
+                latitude=latitude, 
+                longitude=longitude, 
+                start_year=start_year, 
+                end_year=end_year, 
+                parameters=config.NASA_PARAMETERS
+            )
+            progress_bar.progress(50)
         
-        status_text.info(f"🛰️ Fetching solar radiation data from NASA API for Lat: {latitude:.4f}, Lon: {longitude:.4f}...")
+            status_text.info("⚡ Simulating solar generation and calculating financial metrics...")
+            
+            # Step 2: Process NASA data
+            monthly_df = convert_power_data_to_monthly_dataframe(nasa_data, "Custom Location")
+            
+            # Step 3: Physics Calculation & Optimization
+            generation_df = calculate_all_systems_advanced(
+                monthly_df=monthly_df,
+                system_sizes=valid_system_sizes
+            )
+            
+            generation_summary_df = build_generation_summary(
+                generation_df=generation_df,
+                location_name="Custom Location"
+            )
+            
+            # Override Self-Consumption ratios temporarily for this run
+            import src.financial
+            from src.financial import BatteryScenario
+            
+            src.financial.BATTERY_SCENARIOS = (
+                BatteryScenario(
+                    option_name="grid_tied_no_battery",
+                    option_description="Grid-tied without battery storage",
+                    self_consumption_ratio=grid_tied_ratio,
+                    has_battery=False,
+                    cost_ranges=config.GRID_TIED_COST_RANGES,
+                ),
+                BatteryScenario(
+                    option_name="hybrid_with_battery",
+                    option_description="Hybrid with battery storage",
+                    self_consumption_ratio=hybrid_ratio,
+                    has_battery=True,
+                    cost_ranges=config.HYBRID_COST_RANGES,
+                ),
+            )
+            
+            # Step 4: Financial Logic Integration
+            financial_input_df = build_financial_input(
+                location_name="Custom Location",
+                monthly_bill_vnd=monthly_bill,
+                vat_rate=config.VAT_RATE,
+                electricity_tiers=config.ELECTRICITY_TIERS
+            )
+            
+            battery_option_df = compare_battery_options(
+                summary_df=generation_summary_df,
+                financial_df=financial_input_df,
+                location_name="Custom Location"
+            )
+            
+            recommended_df = recommend_best_option(
+                option_df=battery_option_df,
+                min_generation_ratio=min_gen_ratio,
+                max_payback_years=max_payback
+            )
+        except ValueError as e:
+            st.error(f"❌ Data validation error: {e}")
+            progress_bar.empty()
+            status_text.empty()
+            return
         
-        # Filter system sizes based on roof area
-        max_kwp = roof_area / 5
-        valid_system_sizes = [s for s in config.SYSTEM_SIZES if s <= max_kwp]
+        except RuntimeError as e:
+            st.error(f"❌ Network/API error: {e}")
+            progress_bar.empty()
+            status_text.empty()
+            return
         
-        if not valid_system_sizes:
-            st.toast("Roof area is small. Defaulting to 3kWp system.", icon="⚠️")
-            valid_system_sizes = [3]
-        # Step 1: Call NASA API
-        nasa_data = fetch_nasa_solar_data(
-            latitude=latitude, 
-            longitude=longitude, 
-            start_year=start_year, 
-            end_year=end_year, 
-            parameters=config.NASA_PARAMETERS
-        )
-        progress_bar.progress(50)
-    
-        status_text.info("⚡ Simulating solar generation and calculating financial metrics...")
-        
-        # Step 2: Process NASA data
-        monthly_df = convert_power_data_to_monthly_dataframe(nasa_data, "Custom Location")
-        
-        # Step 3: Physics Calculation & Optimization
-        generation_df = calculate_all_systems_advanced(
-            monthly_df=monthly_df,
-            system_sizes=valid_system_sizes
-        )
-        
-        generation_summary_df = build_generation_summary(
-            generation_df=generation_df,
-            location_name="Custom Location"
-        )
-        
-        # Override Self-Consumption ratios temporarily for this run
-        import src.financial
-        from src.financial import BatteryScenario
-        
-        src.financial.BATTERY_SCENARIOS = (
-            BatteryScenario(
-                option_name="grid_tied_no_battery",
-                option_description="Grid-tied without battery storage",
-                self_consumption_ratio=grid_tied_ratio,
-                has_battery=False,
-                cost_ranges=config.GRID_TIED_COST_RANGES,
-            ),
-            BatteryScenario(
-                option_name="hybrid_with_battery",
-                option_description="Hybrid with battery storage",
-                self_consumption_ratio=hybrid_ratio,
-                has_battery=True,
-                cost_ranges=config.HYBRID_COST_RANGES,
-            ),
-        )
-        
-        # Step 4: Financial Logic Integration
-        financial_input_df = build_financial_input(
-            location_name="Custom Location",
-            monthly_bill_vnd=monthly_bill,
-            vat_rate=config.VAT_RATE,
-            electricity_tiers=config.ELECTRICITY_TIERS
-        )
-        
-        battery_option_df = compare_battery_options(
-            summary_df=generation_summary_df,
-            financial_df=financial_input_df,
-            location_name="Custom Location"
-        )
-        
-        recommended_df = recommend_best_option(
-            option_df=battery_option_df,
-            min_generation_ratio=min_gen_ratio,
-            max_payback_years=max_payback
-        )
+        except Exception as e:
+            st.error(f"❌ Unexpected error: {e}")
+            progress_bar.empty()
+            status_text.empty()
+            return
         
         progress_bar.progress(100)
         time.sleep(0.5)
@@ -221,7 +242,7 @@ def main():
                 self_used_kwh=recommended['self_used_kwh'],
                 unused_exported_kwh=recommended['unused_or_exported_kwh']
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, width="stretch")
         
         # -------------------------------------------------------------
         # TAB 2: ENGINEER
@@ -233,7 +254,7 @@ def main():
             st.markdown("#### 📊 Monthly Generation Across System Sizes")
             st.write("Based on real NASA POWER climatic data and physics simulation.")
             fig_bar = create_monthly_generation_bar_chart(generation_df)
-            st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, width="stretch")
             
             # Cumulative Cash Flow Line Chart
             st.markdown("#### 📈 Cumulative Cash Flow & Break-even Analysis")
@@ -242,7 +263,7 @@ def main():
                 investment_cost_vnd=recommended['investment_cost'],
                 annual_saving_vnd=recommended['annual_saving']
             )
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, width="stretch")
             
             # Detailed Options Table
             st.markdown("#### 📋 Comparison of All Evaluated Scenarios")
@@ -267,7 +288,7 @@ def main():
                 "Monthly Generation (kWh)": "{:.1f}",
                 "Annual Savings (VND)": "{:,.0f}",
                 "Payback (Years)": "{:.1f}"
-            }), use_container_width=True, hide_index=True)
+            }), width="stretch", hide_index=True)
             
         # -------------------------------------------------------------
         # TAB 3: INSTALLER

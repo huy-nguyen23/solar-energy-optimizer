@@ -57,6 +57,18 @@ def calculate_generation_kwh(system_kwp,solar_radiation,days_in_month,efficiency
     Returns:
         float: Total generation in kWh for the month.
     """
+    if system_kwp<=0:
+        raise ValueError("System capacity must be greater than 0")
+    
+    if solar_radiation<0:
+        raise ValueError("Solar radiation must be non-negative")
+    
+    if days_in_month<=0:
+        raise ValueError("Days in month must be greater than 0") 
+    
+    if efficiency_factor<0 or efficiency_factor>1 :
+        raise ValueError("Efficiency factor must be between 0 and 1")
+    
     return efficiency_factor*system_kwp*days_in_month*solar_radiation
 
 def calculate_all_systems_advanced(monthly_df,system_sizes=SYSTEM_SIZES):
@@ -121,7 +133,23 @@ def build_generation_summary(generation_df,location_name):
     
     summary_df = summary_df[["location_name","system_kwp","monthly_avg_generation_kwh"]]
     return summary_df
+
+def classify_model_result(survey_ranges,model_average,system_kwp):
+    if system_kwp not in survey_ranges:
+        raise ValueError("This system capacity is not in the survey")
+
+    survey_low=survey_ranges[system_kwp][0]
+    survey_high=survey_ranges[system_kwp][1]
     
+    if survey_low<=model_average<=survey_high:
+        conclusion="Reasonable" 
+    elif model_average<survey_low:
+        conclusion="Lower Than Survey"
+    else:
+        conclusion="Higher Than Survey"    
+    
+    return conclusion
+
 def compare_model_with_survey(generation_df,location_name,survey_ranges):
     """
     Compare model average generation with real-world survey ranges.
@@ -136,12 +164,7 @@ def compare_model_with_survey(generation_df,location_name,survey_ranges):
         survey_low=survey_range[0]
         survey_high=survey_range[1]
         
-        if survey_low<=model_average<=survey_high:
-            conclusion="Reasonable" 
-        elif model_average<survey_low:
-            conclusion="Lower Than Survey"
-        else:
-            conclusion="Higher Than Survey"    
+        conclusion=classify_model_result(survey_ranges,model_average,system_kwp)
             
         rows.append({
             "location_name":location_name,

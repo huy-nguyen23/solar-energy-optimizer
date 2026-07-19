@@ -6,7 +6,7 @@ from src.processing import convert_power_data_to_monthly_dataframe
 
 from src import config
 
-from src.financial import build_financial_input,build_self_used_energy,build_financial_summary,compare_battery_options,recommend_test_option
+from src.financial import build_financial_input,build_self_used_energy,build_financial_summary,compare_battery_options,recommend_best_option
 
 from src.api import(
     geocode_address,
@@ -162,7 +162,7 @@ def main():
     # ========================================================
     print_section("11. Recommend the best solar option")
     
-    recommended_df=recommend_test_option(battery_option_df,config.MIN_GENERATION_RATIO,config.MAX_PAYBACK_YEARS)
+    recommended_df=recommend_best_option(battery_option_df,config.MIN_GENERATION_RATIO,config.MAX_PAYBACK_YEARS)
     save_csv_file(recommended_df,config.RECOMMENDED_SYSTEM_CSV_PATH)
     
     print(recommended_df)
