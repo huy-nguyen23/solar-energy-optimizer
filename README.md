@@ -1,5 +1,7 @@
 # Solar Energy Optimizer
 
+**Live App:** [https://solar-energy-optimizer.streamlit.app/](https://solar-energy-optimizer.streamlit.app/)
+
 ## 1. Project Overview
 
 Solar Energy Optimizer is an interactive web application built with Streamlit. It helps homeowners and businesses evaluate the feasibility, financial savings, and technical parameters of installing a solar energy system (both Grid-Tied and Hybrid options) based on their specific location, roof area, and electricity bills.
