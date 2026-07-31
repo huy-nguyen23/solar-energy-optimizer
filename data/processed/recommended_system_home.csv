@@ -1,2 +1,2 @@
 location_name,system_kwp,option_name,option_description,has_battery,monthly_consumption_kwh,monthly_avg_generation_kwh,self_consumption_ratio,self_used_kwh,unused_or_exported_kwh,average_price_per_kwh_after_vat,investment_cost,annual_saving,monthly_saving,payback_years,recommendation_reason
-home,5,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,564.47,0.6,338.68,225.79,3201.7,65000000,13012298,1084358,5.0,This system meets at least 60% of electricity demand and payback is no more than 6 years.
+home,5,grid_tied_no_battery,Grid-tied without battery storage,False,624.67,627.19,0.6,376.31,250.88,3201.7,65000000,14458134,1204845,4.5,This system meets at least 60% of electricity demand and payback is no more than 6 years.

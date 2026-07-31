@@ -1,5 +1,5 @@
 location_name,system_kwp,model_average_kwh_per_month,survey_low_kwh_per_month,survey_high_kwh_per_month,conclusion
-home,3,338.68,350,400,Lower Than Survey
-home,5,564.47,600,650,Lower Than Survey
-home,6,677.36,720,800,Lower Than Survey
-home,10,1128.94,1200,1300,Lower Than Survey
+home,3,376.31,350,400,Reasonable
+home,5,627.19,600,650,Reasonable
+home,6,752.63,720,800,Reasonable
+home,10,1254.38,1200,1300,Reasonable
